@@ -1,0 +1,16 @@
+$TTL	604800
+@	IN	SOA	steampowered.com. admin.steampowered.com. (
+			      4		; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			 604800 )	; Negative Cache TTL
+;
+
+; name server - NS record
+	IN	NS	ns1.steampowered.com.
+
+; PTR Records
+106	IN	PTR	ns1.steampowered.com.	; 192.168.56.106
+103	IN	PTR	store.steampowered.com.	; 192.168.56.103
+

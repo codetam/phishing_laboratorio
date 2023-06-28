@@ -1,0 +1,13 @@
+//
+// Do any local configuration here
+//
+
+zone "steampowered.com" {
+	type master;
+	file "/etc/bind/zones/db.steampowered.com";
+};
+
+zone "56.168.192.in-addr.arpa" {
+	type master;
+	file "/etc/bind/zones/db.192.168.56";
+};

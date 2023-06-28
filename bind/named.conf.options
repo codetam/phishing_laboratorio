@@ -1,0 +1,28 @@
+acl "trusted" {
+	192.168.56.106; # this machine
+	192.168.56.102; # kali
+	192.168.56.103; # steam server
+	192.168.56.104; # windows PC	
+};
+
+options {
+	directory "/var/cache/bind";
+	listen-on port 53 { localhost; };
+	allow-query { trusted; };
+
+	recursion yes;                 # enables recursive queries
+        allow-recursion { trusted; };  # allows recursive queries from "trusted" clients
+        listen-on { 192.168.56.106; };   # ns1 private IP address - listen on private network only
+        allow-transfer { none; };      # disable zone transfers by default
+
+	forwarders {
+		8.8.8.8;
+		8.8.4.4;
+	};
+
+	//========================================================================
+	// If BIND logs error messages about the root key being expired,
+	// you will need to update your keys.  See https://www.isc.org/bind-keys
+	//========================================================================
+	dnssec-validation auto;
+};
