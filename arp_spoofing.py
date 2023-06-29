@@ -10,9 +10,9 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument(
-    "-g",
-    "--gateway",
-    dest="gateway",
+    "-s",
+    "--server",
+    dest="server",
     help="IP address of the gateway/DNS server",
     type=str,
 )
@@ -27,8 +27,8 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-if not args.gateway:
-    print("Gateway required!")
+if not args.server:
+    print("DNS server required!")
     parser.print_help()
     sys.exit(1)
    
@@ -72,7 +72,7 @@ def restore(target_ip, host_ip, verbose=True):
 
 def main():
     target = args.target                    	# indirizzo IP della vittima
-    gateway = args.gateway                      # indirizzo IP del gateway
+    gateway = args.server                      	# indirizzo IP del server DNS/gateway
     verbose = True
     try:
         while True:
@@ -87,4 +87,3 @@ def main():
         
 if __name__ == "__main__":
     main()
-    

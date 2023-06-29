@@ -66,6 +66,8 @@ def main():
     QUEUE_NUM = 0       # ID della coda
     # Setup del forwarding di pacchetti IP
     os.system("echo 1 > /proc/sys/net/ipv4/ip_forward")
+    # Setup dei messaggi ICMP redirect
+    os.system("echo 0 | tee /proc/sys/net/ipv4/conf/*/send_redirects")
     # Viene inserita una FORWARD rule come richiesto dalla libreria NetfilterQueue
     os.system("iptables -I FORWARD -j NFQUEUE --queue-num {}".format(QUEUE_NUM))
     print("Iptables rule updated.")
